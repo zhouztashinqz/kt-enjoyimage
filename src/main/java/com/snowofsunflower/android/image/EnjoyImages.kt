@@ -12,19 +12,20 @@ object EnjoyImages {
 
     private var imageRound: ImageRound? = null
     private var imageCircle: ImageCircle? = null
-    /**
-     * 封装成Any，便于之后扩展
-     */
-    //TODO 用什么样的实现方式才可以比较好的把？去掉
-    fun pureLoader(context: Context, res: Any): ImageLoaderConfig? {
+
+    fun pureLoader(context: Context, res: Int) = innerPureLoader(context, res)
+    fun pureLoader(context: Context, res: String) = innerPureLoader(context, res)
+
+    //用什么样的实现方式才可以比较好的把？去掉？由于本身是存在空的可能，例如传入其他类型
+    private fun innerPureLoader(context: Context, res: Any): ImageLoaderConfig? {
         var loader: ImageLoaderConfig? = null
-        return res?.let {
+        return res.let {
             when (it) {
-                it is Int -> {
+                is Int -> {
                     val value = res as Int
                     loader = GlideImageLoader(context).load(value)
                 }
-                it is String -> {
+                is String -> {
                     val value = res as String
                     loader = GlideImageLoader(context).load(value)
                 }
@@ -36,14 +37,26 @@ object EnjoyImages {
     /**
      * 常用图片加载器
      */
-    fun loader(context: Context, res: Any): ImageLoaderConfig? {
+    fun loader(context: Context, res: Int): ImageLoaderConfig? {
         return pureLoader(context, res)?.placeholder(R.drawable.com_image_load_placeholder)?.error(R.drawable.com_image_load_error)
     }
 
+    fun loader(context: Context, res: String): ImageLoaderConfig? {
+        return pureLoader(context, res)?.placeholder(R.drawable.com_image_load_placeholder)?.error(R.drawable.com_image_load_error)
+    }
     /**
      * 圆角图片加载器
      */
-    fun roundLoader(context: Context, res: Any): ImageLoaderConfig? {
+    fun roundLoader(context: Context, res: Int): ImageLoaderConfig? {
+
+        if (imageRound == null) {
+            imageRound = ImageRound(context.resources.getDimension(R.dimen.round))
+        }
+        val shape = imageRound as IImageShape
+        return loader(context, res)?.shape(shape)
+    }
+
+    fun roundLoader(context: Context, res: String): ImageLoaderConfig? {
 
         if (imageRound == null) {
             imageRound = ImageRound(context.resources.getDimension(R.dimen.round))
@@ -56,6 +69,14 @@ object EnjoyImages {
      * 圆形图片加载器
      */
     fun circleLoader(context: Context, res: String): ImageLoaderConfig? {
+        if (imageCircle == null) {
+            imageCircle = ImageCircle()
+        }
+        val shape = imageCircle as IImageShape
+        return loader(context, res)?.shape(shape)
+    }
+
+    fun circleLoader(context: Context, res: Int): ImageLoaderConfig? {
         if (imageCircle == null) {
             imageCircle = ImageCircle()
         }
